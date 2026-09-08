@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_top">
+
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <title>Inventarios PDV</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/inventory.css') }}">
+</head>
+
+<body>
+  <header>
+    <div class="marca">CREPES &amp; WAFFLES</div>
+    <h1>Inventarios PDV</h1>
+    <p>Inventario Uno a Uno</p>
+  </header>
+
+  <main class="contenedor">
+    <section id="pantallaInicio" class="panel">
+      <h2>Datos del inventario</h2>
+
+      <div class="datos">
+        <div>
+          <label for="puntoVenta">Punto de venta</label>
+
+          <select
+            id="puntoVenta"
+            onchange="cargarCategoriasPDV()"
+          >
+            <option value="">
+              Cargando puntos de venta...
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label for="fechaInventario">
+            Fecha del inventario
+          </label>
+
+          <input
+            id="fechaInventario"
+            type="date"
+          >
+        </div>
+
+        <div>
+          <label for="categoriaInventario">
+            Categoría
+          </label>
+
+          <select
+            id="categoriaInventario"
+            disabled
+          >
+            <option value="">
+              Seleccione primero el PDV
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div id="mensajeInicio" class="mensaje"></div>
+
+      <button
+        id="botonComenzar"
+        class="boton-principal"
+        onclick="comenzarInventario()"
+      >
+        Comenzar inventario
+      </button>
+    </section>
+
+    <section
+      id="pantallaCarga"
+      class="panel cargando oculto"
+    >
+      <div class="circulo"></div>
+
+      <strong>
+        Cargando productos del inventario...
+      </strong>
+    </section>
+
+    <section
+      id="pantallaInventario"
+      class="oculto"
+    >
+      <div class="panel">
+        <div class="resumen">
+          <div>
+            <strong id="nombrePDV"></strong>
+            <div id="fechaResumen"></div>
+            <div id="categoriaResumen"></div>
+          </div>
+
+          <div class="progreso-contenedor">
+            <div class="progreso-texto">
+              <span>Avance del inventario</span>
+              <span id="textoProgreso">0 de 0</span>
+            </div>
+
+            <div class="progreso-fondo">
+              <div
+                id="barraProgreso"
+                class="progreso"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="barra-superior">
+          <div>
+            <label for="buscador">
+              Buscar producto o código
+            </label>
+
+            <input
+              id="buscador"
+              type="search"
+              placeholder="Ejemplo: 2325 o queso mozzarella"
+              oninput="mostrarProductos()"
+            >
+          </div>
+        </div>
+
+        <div
+          id="mensajeInventario"
+          class="mensaje"
+        ></div>
+
+        <div
+          id="listaProductos"
+          class="productos"
+        ></div>
+
+        <div class="acciones">
+          <button
+            class="boton-secundario"
+            onclick="completarVaciosConCero()"
+          >
+            Completar vacíos con 0
+          </button>
+
+          <button
+            id="botonGuardar"
+            class="boton-principal"
+            style="margin-top: 0"
+            onclick="guardarInventario()"
+          >
+            Guardar inventario
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section
+      id="pantallaExito"
+      class="panel oculto"
+    >
+      <h2>Inventario guardado</h2>
+
+      <div class="mensaje exito">
+        El inventario fue registrado correctamente.
+      </div>
+
+      <button
+        class="boton-principal"
+        onclick="nuevoInventario()"
+      >
+        Realizar otro inventario
+      </button>
+    </section>
+  </main>
+
+  <script src="{{ url_for('static', filename='js/inventory.js') }}"></script>
+</body>
+</html>

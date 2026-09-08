@@ -1,0 +1,9 @@
+CONTROL_HEADERS = ['ID archivo', 'Punto de venta', 'Estado', 'Base Google Sheets', 'Formulario para responder', 'Formulario para editar', 'Productos', 'Fecha', 'Detalle']
+COUNT_HEADERS = ['ID Registro', 'Fecha y hora', 'Fecha inventario', 'Punto de venta', 'Categoría', 'Item', 'Nombre Producto', 'Desc. U.M.', 'Cerrado', 'Abierto', 'Factor', 'Conteo Físico']
+SUMMARY_HEADERS = ['Fecha inventario', 'Punto de venta', 'Item', 'Descripcionproducto', 'UDM', 'Cerrado', 'Abierto', 'Factor', 'ConteoFisico', 'Última actualización']
+UDM_LOG_HEADERS = ['Fecha y hora', 'Punto de venta', 'Estado', 'Productos actualizados', 'Productos sin coincidencia', 'Detalle']
+ITEM_OPTIONS = ['item', 'codigo', 'cod', 'id producto']
+PRODUCT_OPTIONS = ['nombre producto', 'producto', 'descripcion', 'desc item']
+FACTOR_OPTIONS = ['factor', 'factor um', 'factor u m', 'factor udm']
+UDM_OPTIONS = ['desc u m', 'desc um', 'udm', 'unidad de medida', 'unidad']
+MIME_XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'

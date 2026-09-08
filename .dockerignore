@@ -1,0 +1,12 @@
+.git
+.env
+credentials
+.tools
+.venv
+.runtime
+__pycache__
+*.pyc
+.pytest_cache
+tests
+legacy
+node_modules

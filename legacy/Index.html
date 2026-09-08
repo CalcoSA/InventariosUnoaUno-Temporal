@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_top">
+
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <style>
+    :root {
+      --chocolate: #4A2B14;
+      --cafe: #65401F;
+      --beige: #F1E5D1;
+      --dorado: #D5B88B;
+      --fondo: #FCFAF6;
+      --texto: #4B321F;
+      --rojo: #A53527;
+      --blanco: #FFFFFF;
+      --verde: #477A52;
+      --sombra: 0 5px 18px rgba(74, 43, 20, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--fondo);
+      color: var(--texto);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    header {
+      padding: 28px 18px;
+      background: var(--chocolate);
+      border-bottom: 7px solid var(--dorado);
+      color: var(--blanco);
+      text-align: center;
+    }
+
+    .marca {
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 3px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    header p {
+      margin: 7px 0 0;
+      color: var(--beige);
+      font-size: 16px;
+    }
+
+    .contenedor {
+      width: min(1100px, calc(100% - 28px));
+      margin: 24px auto 50px;
+    }
+
+    .panel {
+      padding: 24px;
+      background: var(--blanco);
+      border: 1px solid var(--dorado);
+      border-radius: 16px;
+      box-shadow: var(--sombra);
+    }
+
+    h2 {
+      margin: 0 0 20px;
+      color: var(--chocolate);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--cafe);
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .datos {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    select,
+    input {
+      width: 100%;
+      min-height: 46px;
+      padding: 10px 13px;
+      background: var(--fondo);
+      border: 1px solid var(--dorado);
+      border-radius: 10px;
+      color: var(--texto);
+      font-size: 16px;
+      outline: none;
+    }
+
+    select:focus,
+    input:focus {
+      border-color: var(--cafe);
+      box-shadow: 0 0 0 3px rgba(101, 64, 31, 0.12);
+    }
+
+    button {
+      min-height: 46px;
+      padding: 11px 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: 0.65;
+    }
+
+    .boton-principal {
+      width: 100%;
+      margin-top: 18px;
+      background: var(--cafe);
+      color: var(--blanco);
+    }
+
+    .boton-principal:hover {
+      background: var(--chocolate);
+    }
+
+    .boton-secundario {
+      background: var(--beige);
+      border: 1px solid var(--dorado);
+      color: var(--chocolate);
+    }
+
+    .barra-superior {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .resumen {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 16px;
+      padding: 15px;
+      background: var(--beige);
+      border: 1px solid var(--dorado);
+      border-radius: 12px;
+    }
+
+    .resumen strong {
+      color: var(--chocolate);
+    }
+
+    .progreso-contenedor {
+      flex: 1;
+      max-width: 430px;
+    }
+
+    .progreso-texto {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .progreso-fondo {
+      height: 12px;
+      overflow: hidden;
+      background: var(--blanco);
+      border: 1px solid var(--dorado);
+      border-radius: 20px;
+    }
+
+    .progreso {
+      width: 0;
+      height: 100%;
+      background: var(--cafe);
+      transition: width 0.25s;
+    }
+
+    .productos {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .producto {
+      display: grid;
+      grid-template-columns: 1fr 250px;
+      align-items: center;
+      gap: 15px;
+      padding: 16px;
+      background: var(--blanco);
+      border: 1px solid var(--dorado);
+      border-radius: 12px;
+    }
+
+    .producto:nth-child(even) {
+      background: var(--beige);
+    }
+
+    .categoria {
+      display: inline-block;
+      margin-bottom: 7px;
+      padding: 4px 9px;
+      background: var(--chocolate);
+      border-radius: 20px;
+      color: var(--blanco);
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .nombre-producto {
+      margin-bottom: 5px;
+      color: var(--chocolate);
+      font-weight: bold;
+    }
+
+    .detalle-producto {
+      font-size: 13px;
+    }
+
+    .cantidades {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .cantidad label {
+      text-align: center;
+    }
+
+    .cantidad input {
+      background: var(--blanco);
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .acciones {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .mensaje {
+      display: none;
+      margin: 16px 0;
+      padding: 14px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+
+    .mensaje.error {
+      display: block;
+      background: #F8E5E2;
+      border: 1px solid var(--rojo);
+      color: var(--rojo);
+    }
+
+    .mensaje.exito {
+      display: block;
+      background: #E7F2E9;
+      border: 1px solid var(--verde);
+      color: var(--verde);
+    }
+
+    .cargando {
+      padding: 35px;
+      text-align: center;
+    }
+
+    .circulo {
+      width: 42px;
+      height: 42px;
+      margin: 0 auto 15px;
+      border: 5px solid var(--beige);
+      border-top-color: var(--cafe);
+      border-radius: 50%;
+      animation: girar 0.8s linear infinite;
+    }
+
+    @keyframes girar {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .oculto {
+      display: none !important;
+    }
+
+    .sin-resultados {
+      grid-column: 1 / -1;
+      padding: 30px;
+      background: var(--beige);
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    @media (max-width: 760px) {
+      header h1 {
+        font-size: 25px;
+      }
+
+      .datos,
+      .barra-superior,
+      .productos,
+      .acciones {
+        grid-template-columns: 1fr;
+      }
+
+      .resumen {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .progreso-contenedor {
+        max-width: none;
+      }
+
+      .producto {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        padding: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="marca">CREPES &amp; WAFFLES</div>
+    <h1>Inventarios PDV</h1>
+    <p>Inventario Uno a Uno</p>
+  </header>
+
+  <main class="contenedor">
+    <section id="pantallaInicio" class="panel">
+      <h2>Datos del inventario</h2>
+
+      <div class="datos">
+        <div>
+          <label for="puntoVenta">Punto de venta</label>
+
+          <select
+            id="puntoVenta"
+            onchange="cargarCategoriasPDV()"
+          >
+            <option value="">
+              Cargando puntos de venta...
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label for="fechaInventario">
+            Fecha del inventario
+          </label>
+
+          <input
+            id="fechaInventario"
+            type="date"
+          >
+        </div>
+
+        <div>
+          <label for="categoriaInventario">
+            Categoría
+          </label>
+
+          <select
+            id="categoriaInventario"
+            disabled
+          >
+            <option value="">
+              Seleccione primero el PDV
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div id="mensajeInicio" class="mensaje"></div>
+
+      <button
+        id="botonComenzar"
+        class="boton-principal"
+        onclick="comenzarInventario()"
+      >
+        Comenzar inventario
+      </button>
+    </section>
+
+    <section
+      id="pantallaCarga"
+      class="panel cargando oculto"
+    >
+      <div class="circulo"></div>
+
+      <strong>
+        Cargando productos del inventario...
+      </strong>
+    </section>
+
+    <section
+      id="pantallaInventario"
+      class="oculto"
+    >
+      <div class="panel">
+        <div class="resumen">
+          <div>
+            <strong id="nombrePDV"></strong>
+            <div id="fechaResumen"></div>
+            <div id="categoriaResumen"></div>
+          </div>
+
+          <div class="progreso-contenedor">
+            <div class="progreso-texto">
+              <span>Avance del inventario</span>
+              <span id="textoProgreso">0 de 0</span>
+            </div>
+
+            <div class="progreso-fondo">
+              <div
+                id="barraProgreso"
+                class="progreso"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="barra-superior">
+          <div>
+            <label for="buscador">
+              Buscar producto o código
+            </label>
+
+            <input
+              id="buscador"
+              type="search"
+              placeholder="Ejemplo: 2325 o queso mozzarella"
+              oninput="mostrarProductos()"
+            >
+          </div>
+        </div>
+
+        <div
+          id="mensajeInventario"
+          class="mensaje"
+        ></div>
+
+        <div
+          id="listaProductos"
+          class="productos"
+        ></div>
+
+        <div class="acciones">
+          <button
+            class="boton-secundario"
+            onclick="completarVaciosConCero()"
+          >
+            Completar vacíos con 0
+          </button>
+
+          <button
+            id="botonGuardar"
+            class="boton-principal"
+            style="margin-top: 0"
+            onclick="guardarInventario()"
+          >
+            Guardar inventario
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section
+      id="pantallaExito"
+      class="panel oculto"
+    >
+      <h2>Inventario guardado</h2>
+
+      <div class="mensaje exito">
+        El inventario fue registrado correctamente.
+      </div>
+
+      <button
+        class="boton-principal"
+        onclick="nuevoInventario()"
+      >
+        Realizar otro inventario
+      </button>
+    </section>
+  </main>
+
+  <script>
+    let productos = [];
+    let puntoVentaActual = '';
+    let fechaActual = '';
+    let categoriaActual = '';
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      function () {
+        asignarFechaActual();
+        cargarPuntosVenta();
+      }
+    );
+
+    function asignarFechaActual() {
+      const hoy = new Date();
+      const anio = hoy.getFullYear();
+
+      const mes = String(
+        hoy.getMonth() + 1
+      ).padStart(2, '0');
+
+      const dia = String(
+        hoy.getDate()
+      ).padStart(2, '0');
+
+      document
+        .getElementById('fechaInventario')
+        .value =
+          anio + '-' + mes + '-' + dia;
+    }
+
+    function cargarPuntosVenta() {
+      google.script.run
+        .withSuccessHandler(function (puntos) {
+          const selector =
+            document.getElementById('puntoVenta');
+
+          selector.innerHTML =
+            '<option value="">' +
+            'Seleccione un punto de venta' +
+            '</option>';
+
+          puntos.forEach(function (punto) {
+            const opcion =
+              document.createElement('option');
+
+            opcion.value = punto;
+            opcion.textContent = punto;
+            selector.appendChild(opcion);
+          });
+
+          if (puntos.length === 0) {
+            mostrarMensaje(
+              'mensajeInicio',
+              'No se encontraron puntos de venta disponibles.',
+              'error'
+            );
+          }
+        })
+        .withFailureHandler(function (error) {
+          mostrarMensaje(
+            'mensajeInicio',
+            obtenerMensajeError(error),
+            'error'
+          );
+        })
+        .obtenerPuntosVenta();
+    }
+
+    function cargarCategoriasPDV() {
+      const puntoVenta =
+        document
+          .getElementById('puntoVenta')
+          .value;
+
+      const selector =
+        document
+          .getElementById('categoriaInventario');
+
+      ocultarMensaje('mensajeInicio');
+      selector.disabled = true;
+
+      if (!puntoVenta) {
+        selector.innerHTML =
+          '<option value="">' +
+          'Seleccione primero el PDV' +
+          '</option>';
+
+        return;
+      }
+
+      selector.innerHTML =
+        '<option value="">' +
+        'Cargando categorías...' +
+        '</option>';
+
+      google.script.run
+        .withSuccessHandler(function (categorias) {
+          selector.innerHTML =
+            '<option value="">' +
+            'Seleccione una categoría' +
+            '</option>';
+
+          categorias.forEach(function (categoria) {
+            const opcion =
+              document.createElement('option');
+
+            opcion.value = categoria;
+            opcion.textContent = categoria;
+            selector.appendChild(opcion);
+          });
+
+          selector.disabled = false;
+
+          if (categorias.length === 0) {
+            mostrarMensaje(
+              'mensajeInicio',
+              'No se encontraron categorías para este PDV.',
+              'error'
+            );
+          }
+        })
+        .withFailureHandler(function (error) {
+          selector.innerHTML =
+            '<option value="">' +
+            'No fue posible cargar' +
+            '</option>';
+
+          mostrarMensaje(
+            'mensajeInicio',
+            obtenerMensajeError(error),
+            'error'
+          );
+        })
+        .obtenerCategorias(puntoVenta);
+    }
+
+    function comenzarInventario() {
+      const puntoVenta =
+        document
+          .getElementById('puntoVenta')
+          .value;
+
+      const fecha =
+        document
+          .getElementById('fechaInventario')
+          .value;
+
+      const categoria =
+        document
+          .getElementById('categoriaInventario')
+          .value;
+
+      ocultarMensaje('mensajeInicio');
+
+      if (!puntoVenta || !fecha || !categoria) {
+        mostrarMensaje(
+          'mensajeInicio',
+          'Seleccione el punto de venta, la fecha y la categoría.',
+          'error'
+        );
+
+        return;
+      }
+
+      puntoVentaActual = puntoVenta;
+      fechaActual = fecha;
+      categoriaActual = categoria;
+
+      document
+        .getElementById('pantallaInicio')
+        .classList.add('oculto');
+
+      document
+        .getElementById('pantallaCarga')
+        .classList.remove('oculto');
+
+      google.script.run
+        .withSuccessHandler(function (lista) {
+          document
+            .getElementById('pantallaCarga')
+            .classList.add('oculto');
+
+          if (!lista || lista.length === 0) {
+            document
+              .getElementById('pantallaInicio')
+              .classList.remove('oculto');
+
+            mostrarMensaje(
+              'mensajeInicio',
+              'La categoría seleccionada no contiene productos.',
+              'error'
+            );
+
+            return;
+          }
+
+          productos = lista.map(function (producto) {
+            producto.cerrado = '';
+            producto.abierto = '';
+
+            return producto;
+          });
+
+          recuperarBorrador();
+          prepararInventario();
+
+          document
+            .getElementById('pantallaInventario')
+            .classList.remove('oculto');
+        })
+        .withFailureHandler(function (error) {
+          document
+            .getElementById('pantallaCarga')
+            .classList.add('oculto');
+
+          document
+            .getElementById('pantallaInicio')
+            .classList.remove('oculto');
+
+          mostrarMensaje(
+            'mensajeInicio',
+            obtenerMensajeError(error),
+            'error'
+          );
+        })
+        .obtenerProductos(
+          puntoVentaActual,
+          categoriaActual
+        );
+    }
+
+    function prepararInventario() {
+      document
+        .getElementById('nombrePDV')
+        .textContent = puntoVentaActual;
+
+      document
+        .getElementById('fechaResumen')
+        .textContent =
+          'Fecha: ' +
+          formatearFecha(fechaActual);
+
+      document
+        .getElementById('categoriaResumen')
+        .textContent =
+          'Categoría: ' + categoriaActual;
+
+      document
+        .getElementById('buscador')
+        .value = '';
+
+      mostrarProductos();
+      actualizarProgreso();
+    }
+
+    function mostrarProductos() {
+      const texto = normalizarTexto(
+        document
+          .getElementById('buscador')
+          .value
+      );
+
+      const resultados =
+        productos.filter(function (producto) {
+          const contenido = normalizarTexto(
+            producto.item +
+            ' ' +
+            producto.producto
+          );
+
+          return contenido.includes(texto);
+        });
+
+      const contenedor =
+        document.getElementById('listaProductos');
+
+      if (resultados.length === 0) {
+        contenedor.innerHTML =
+          '<div class="sin-resultados">' +
+          'No se encontraron productos con esa búsqueda.' +
+          '</div>';
+
+        return;
+      }
+
+      contenedor.innerHTML =
+        resultados.map(function (producto) {
+          const indice =
+            productos.indexOf(producto);
+
+          return `
+            <article class="producto">
+              <div>
+                <span class="categoria">
+                  ${escaparHTML(producto.categoria)}
+                </span>
+
+                <div class="nombre-producto">
+                  ${escaparHTML(producto.producto)}
+                </div>
+
+                <div class="detalle-producto">
+                  Código:
+                  ${escaparHTML(producto.item)}
+                  · Desc. U.M.:
+                  ${escaparHTML(
+                    producto.udm || 'Sin UDM'
+                  )}
+                </div>
+              </div>
+
+              <div class="cantidades">
+                <div class="cantidad">
+                  <label for="cerrado-${indice}">
+                    Cerrado
+                  </label>
+
+                  <input
+                    id="cerrado-${indice}"
+                    type="number"
+                    min="0"
+                    step="any"
+                    inputmode="decimal"
+                    value="${escaparHTML(producto.cerrado)}"
+                    oninput="registrarCantidad(
+                      ${indice},
+                      'cerrado',
+                      this.value
+                    )"
+                    placeholder="0"
+                  >
+                </div>
+
+                <div class="cantidad">
+                  <label for="abierto-${indice}">
+                    Abierto
+                  </label>
+
+                  <input
+                    id="abierto-${indice}"
+                    type="number"
+                    min="0"
+                    step="any"
+                    inputmode="decimal"
+                    value="${escaparHTML(producto.abierto)}"
+                    oninput="registrarCantidad(
+                      ${indice},
+                      'abierto',
+                      this.value
+                    )"
+                    placeholder="0"
+                  >
+                </div>
+              </div>
+            </article>
+          `;
+        }).join('');
+    }
+
+    function registrarCantidad(
+      indice,
+      tipo,
+      valor
+    ) {
+      productos[indice][tipo] = valor;
+
+      guardarBorrador();
+      actualizarProgreso();
+    }
+
+    function actualizarProgreso() {
+      const completados =
+        productos.filter(function (producto) {
+          return (
+            producto.cerrado !== '' &&
+            producto.abierto !== ''
+          );
+        }).length;
+
+      const total = productos.length;
+
+      const porcentaje = total
+        ? Math.round(
+            (completados / total) * 100
+          )
+        : 0;
+
+      document
+        .getElementById('textoProgreso')
+        .textContent =
+          completados +
+          ' de ' +
+          total +
+          ' (' +
+          porcentaje +
+          '%)';
+
+      document
+        .getElementById('barraProgreso')
+        .style.width =
+          porcentaje + '%';
+    }
+
+    function completarVaciosConCero() {
+      const cantidadVacios =
+        productos.reduce(
+          function (total, producto) {
+            return (
+              total +
+              (producto.cerrado === '' ? 1 : 0) +
+              (producto.abierto === '' ? 1 : 0)
+            );
+          },
+          0
+        );
+
+      if (cantidadVacios === 0) {
+        return;
+      }
+
+      const confirmar = window.confirm(
+        'Se marcarán ' +
+        cantidadVacios +
+        ' casillas vacías con valor 0. ' +
+        '¿Desea continuar?'
+      );
+
+      if (!confirmar) {
+        return;
+      }
+
+      productos.forEach(function (producto) {
+        if (producto.cerrado === '') {
+          producto.cerrado = '0';
+        }
+
+        if (producto.abierto === '') {
+          producto.abierto = '0';
+        }
+      });
+
+      guardarBorrador();
+      mostrarProductos();
+      actualizarProgreso();
+    }
+
+    function guardarInventario() {
+      ocultarMensaje('mensajeInventario');
+
+      const pendientes =
+        productos.filter(function (producto) {
+          return (
+            producto.cerrado === '' ||
+            producto.abierto === ''
+          );
+        }).length;
+
+      if (pendientes > 0) {
+        mostrarMensaje(
+          'mensajeInventario',
+          'Faltan ' +
+          pendientes +
+          ' productos por completar. ' +
+          'Registre Cerrado y Abierto o utilice ' +
+          '“Completar vacíos con 0”.',
+          'error'
+        );
+
+        return;
+      }
+
+      const confirmar = window.confirm(
+        '¿Confirma que desea guardar la categoría ' +
+        categoriaActual +
+        ' de ' +
+        puntoVentaActual +
+        '?'
+      );
+
+      if (!confirmar) {
+        return;
+      }
+
+      const boton =
+        document.getElementById('botonGuardar');
+
+      boton.disabled = true;
+      boton.textContent =
+        'Guardando inventario...';
+
+      const datos = {
+        puntoVenta: puntoVentaActual,
+        fecha: fechaActual,
+        categoria: categoriaActual,
+
+        conteos: productos.map(
+          function (producto) {
+            return {
+              categoria: producto.categoria,
+              item: producto.item,
+              producto: producto.producto,
+              udm: producto.udm,
+              cerrado: producto.cerrado,
+              abierto: producto.abierto
+            };
+          }
+        )
+      };
+
+      google.script.run
+        .withSuccessHandler(function () {
+          eliminarBorrador();
+
+          document
+            .getElementById('pantallaInventario')
+            .classList.add('oculto');
+
+          document
+            .getElementById('pantallaExito')
+            .classList.remove('oculto');
+
+          boton.disabled = false;
+          boton.textContent =
+            'Guardar inventario';
+        })
+        .withFailureHandler(function (error) {
+          boton.disabled = false;
+          boton.textContent =
+            'Guardar inventario';
+
+          mostrarMensaje(
+            'mensajeInventario',
+            obtenerMensajeError(error),
+            'error'
+          );
+
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        })
+        .guardarInventario(datos);
+    }
+
+    function nuevoInventario() {
+      productos = [];
+      puntoVentaActual = '';
+      fechaActual = '';
+      categoriaActual = '';
+
+      document
+        .getElementById('puntoVenta')
+        .value = '';
+
+      const selectorCategoria =
+        document
+          .getElementById('categoriaInventario');
+
+      selectorCategoria.innerHTML =
+        '<option value="">' +
+        'Seleccione primero el PDV' +
+        '</option>';
+
+      selectorCategoria.disabled = true;
+
+      asignarFechaActual();
+
+      document
+        .getElementById('pantallaExito')
+        .classList.add('oculto');
+
+      document
+        .getElementById('pantallaInicio')
+        .classList.remove('oculto');
+
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+
+    function guardarBorrador() {
+      try {
+        localStorage.setItem(
+          obtenerClaveBorrador(),
+
+          JSON.stringify(
+            productos.map(function (producto) {
+              return {
+                item: producto.item,
+                cerrado: producto.cerrado,
+                abierto: producto.abierto
+              };
+            })
+          )
+        );
+      } catch (error) {
+        console.log(
+          'No se pudo guardar el borrador.'
+        );
+      }
+    }
+
+    function recuperarBorrador() {
+      try {
+        const borrador = JSON.parse(
+          localStorage.getItem(
+            obtenerClaveBorrador()
+          ) || '[]'
+        );
+
+        const cantidades = {};
+
+        borrador.forEach(function (registro) {
+          cantidades[String(registro.item)] = {
+            cerrado: registro.cerrado,
+            abierto: registro.abierto
+          };
+        });
+
+        productos.forEach(function (producto) {
+          const clave = String(producto.item);
+
+          if (
+            Object.prototype.hasOwnProperty.call(
+              cantidades,
+              clave
+            )
+          ) {
+            const conteo = cantidades[clave];
+
+            producto.cerrado =
+              conteo.cerrado === undefined
+                ? ''
+                : conteo.cerrado;
+
+            producto.abierto =
+              conteo.abierto === undefined
+                ? ''
+                : conteo.abierto;
+          }
+        });
+      } catch (error) {
+        console.log(
+          'No se pudo recuperar el borrador.'
+        );
+      }
+    }
+
+    function eliminarBorrador() {
+      try {
+        localStorage.removeItem(
+          obtenerClaveBorrador()
+        );
+      } catch (error) {
+        console.log(
+          'No se pudo eliminar el borrador.'
+        );
+      }
+    }
+
+    function obtenerClaveBorrador() {
+      return (
+        'inventario-uno-a-uno-v3-' +
+        puntoVentaActual +
+        '-' +
+        fechaActual +
+        '-' +
+        categoriaActual
+      );
+    }
+
+    function mostrarMensaje(
+      id,
+      texto,
+      tipo
+    ) {
+      const elemento =
+        document.getElementById(id);
+
+      elemento.textContent = texto;
+      elemento.className =
+        'mensaje ' + tipo;
+    }
+
+    function ocultarMensaje(id) {
+      const elemento =
+        document.getElementById(id);
+
+      elemento.textContent = '';
+      elemento.className = 'mensaje';
+    }
+
+    function obtenerMensajeError(error) {
+      return error && error.message
+        ? error.message
+        : String(
+            error ||
+            'Ocurrió un error inesperado.'
+          );
+    }
+
+    function formatearFecha(fecha) {
+      const partes = fecha.split('-');
+
+      if (partes.length !== 3) {
+        return fecha;
+      }
+
+      return (
+        partes[2] +
+        '/' +
+        partes[1] +
+        '/' +
+        partes[0]
+      );
+    }
+
+    function normalizarTexto(texto) {
+      return String(texto || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+    }
+
+    function escaparHTML(valor) {
+      return String(valor ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>
