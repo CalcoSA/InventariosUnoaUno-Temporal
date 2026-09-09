@@ -2,9 +2,13 @@
 
 Primera versión de la migración del Apps Script suministrado. Google Sheets sigue siendo la persistencia; los nombres de PDV proceden de `Control Formularios`. No hay base de datos adicional. La interfaz, CSS y lógica de borradores se conservaron desde `legacy/Index.html`.
 
-La aplicación inicia localmente. Las pruebas usan dobles de Google en memoria y comparaciones con el JavaScript original. **La validación contra los documentos reales está bloqueada por la falta del cliente OAuth `credentials/credentials.json`.** La creación de nuevos Forms requiere además desplegar el adaptador de `compat/`. No se ejecutaron escrituras de producción ni se desplegó a GCP.
+La fase de seguridad añade SSO WordPress RS256, sesión interna HS256 y cierre por 20 minutos de inactividad. Desarrollo sigue con `APP_ENV=development` y `AUTH_ENABLED=false`; producción exige autenticación, secreto independiente y clave pública RSA. La guía manual para **Apache → Gunicorn (1 worker/4 threads) → Flask**, sin despliegue realizado, está en [docs/DEPLOY_GCP_APACHE.md](docs/DEPLOY_GCP_APACHE.md). Código previsto: `/opt/apps/inventarios-uno-a-uno`; no tocar `/opt/apps/deliveryTraceability`. Detalle técnico: [docs/AUTENTICACION_SSO.md](docs/AUTENTICACION_SSO.md).
+
+Revisión del 9 de septiembre de 2026: **OAuth funciona, las 82 pruebas pasan y se leyeron correctamente los productos de los 35 PDV reales**. El guardado y las operaciones administrativas se comprobaron con mocks y referencia legacy, sin ejecutarlos contra Google real en esta revisión. La creación de nuevos Forms requiere el adaptador de `compat/`; `GOOGLE_FORMS_COMPAT_SCRIPT_ID` está vacío en la configuración local revisada. No se desplegó a GCP. El flujo completo, ubicación de cada dato y condiciones para retirar los scripts están en [FINAL_REVIEW.md](FINAL_REVIEW.md).
 
 ## Estructura
+
+La guía definitiva está en [docs/FUNCIONAMIENTO_SISTEMA.md](docs/FUNCIONAMIENTO_SISTEMA.md): mapa real de los 35 PDV con URLs/IDs/Forms, ejemplo BC01 (fila 2, misma base que el maestro), columnas escritas, diagramas, operaciones administrativas y dictamen por proyecto Apps Script. La ampliación documental se hizo solo con lecturas; los diagnósticos temporales se retiraron después de incorporar su evidencia.
 
 ```text
 app/
@@ -19,12 +23,15 @@ scripts/          Verificación y operaciones administrativas
 compat/           Adaptador mínimo FormApp y manifiesto
 legacy/           Código fuente vigente suministrado, sin modificar
 tests/            Pruebas con mocks y referencia JavaScript
+docs/             Funcionamiento, destinos reales y matriz de impacto
 credentials/      JSON privados, excluidos de Git
 ```
 
 Flujo: Controller → Service → Repository → GoogleSheetsService → API oficial. Drive y Forms están aislados en servicios dedicados. Consulte [MIGRATION_PARITY.md](MIGRATION_PARITY.md) para la correspondencia función por función y [VALIDATION.md](VALIDATION.md) para las verificaciones.
 
 ## Ejecutar en este workspace de Windows/VS Code
+
+El servidor del agente está detenido. El usuario inicia manualmente la aplicación con `.\.venv\Scripts\python.exe run.py`. El agente no debe iniciar `run.py` salvo para una prueba concreta y debe detener todo servidor propio antes de terminar; para probar rutas se prefiere el test client, sin abrir puertos. Esta regla está en [AGENTS.md](AGENTS.md).
 
 Se prepararon Python 3.12.10 en `.tools/python/tools/` y un entorno `.venv/` porque `python` no estaba en PATH. No elimine `.tools` mientras utilice ese entorno.
 
@@ -41,6 +48,8 @@ Si la política corporativa impide activar scripts, no hace falta cambiarla:
 
 Abra http://127.0.0.1:5000. La página carga sin credenciales; las consultas de inventario muestran el mensaje de configuración hasta autorizar Google. El servidor escucha en loopback de forma predeterminada. Ctrl+C lo detiene.
 
+Si el verificador funciona pero `/api/puntos-venta` devuelve 500, revise la consola del proceso que realmente atiende el puerto 5000. El manejador ya registra el traceback con `app.logger.exception`; el navegador recibe únicamente el mensaje genérico. En el primer diagnóstico real, un servidor anterior seguía ejecutándose con la red restringida y fallaba con `PermissionError: [WinError 10013]` al conectar con Google. Detener ese proceso y ejecutar `run.py` desde una terminal con acceso de red resolvió el fallo sin cambiar OAuth ni las reglas de inventario.
+
 ## Instalación desde cero
 
 Instale Python 3.11+ (se verificó con 3.12.10), abra una terminal PowerShell en la raíz del proyecto y ejecute:
@@ -54,9 +63,9 @@ Copy-Item .env.example .env
 
 No sobrescriba un `.env` ya configurado. El actual contiene únicamente configuración sin secretos. Para reproducir las versiones verificadas de Windows puede instalar `requirements-lock.txt`.
 
-## Google OAuth: primer paso necesario
+## Google OAuth: configuración en una instalación nueva
 
-**Coloque el JSON de un cliente OAuth 2.0 de tipo “Aplicación de escritorio” en `credentials/credentials.json`.** No use una clave de Service Account.
+En el workspace revisado ya existen cliente y token válidos; no es necesario regenerarlos para usar las lecturas actuales. Las instrucciones siguientes corresponden a una instalación nueva: **coloque el JSON de un cliente OAuth 2.0 de tipo “Aplicación de escritorio” en `credentials/credentials.json`.** No use una clave de Service Account.
 
 Para obtenerlo en el proyecto Google Cloud autorizado por su organización: habilite Google Sheets API, Google Drive API y Google Forms API; configure Google Auth Platform (audiencia interna si corresponde, o usuario de prueba permitido); cree el cliente de escritorio y descargue su JSON. Use la cuenta Google que actualmente tiene acceso a los archivos del Apps Script.
 
@@ -85,7 +94,7 @@ Las variables conservan estos documentos exactos:
 pytest
 ```
 
-Node.js solo es necesario para las pruebas diferenciales contra Apps Script y el smoke de JavaScript. No es necesario para ejecutar Flask. Sin Node, esas pruebas se marcan como omitidas. Ninguna prueba utiliza las credenciales reales ni escribe en Google. Los datos de prueba existen únicamente en `tests/`.
+Node.js solo es necesario para las pruebas diferenciales contra Apps Script y los escenarios JavaScript de inventario/autenticación. No es necesario para ejecutar Flask. Sin Node, esas pruebas se marcan como omitidas. PHP CLI con OpenSSL es opcional para los ocho casos de integración del snippet (`PHP_TEST_BINARY` permite indicar su ejecutable); sin PHP se omiten. La validación de esta fase ejecutó **188 pruebas sin omisiones**. Ninguna prueba utiliza las credenciales reales ni escribe en Google. Los datos de prueba existen únicamente en `tests/`.
 
 ## Operaciones administrativas
 
@@ -105,11 +114,13 @@ python scripts/rebuild_general_summary.py
 
 REST crea el título, descripción, preguntas, secciones y publicación. La API documenta `linkedSheetId` como solo lectura; no ofrece campos para validación numérica de texto, mensaje de confirmación ni barra de progreso. Se conservan esas operaciones en `compat/forms_adapter.gs`, invocado desde Python mediante Apps Script API. No se reemplazan las respuestas por guardados manuales. Consulte [compat/README.md](compat/README.md).
 
+La captura Flask guarda Cerrado/Abierto en `Conteos Inventarios` y actualiza ambos resúmenes. Responder un Google Form utiliza su destino de respuestas vinculado. El código actual no importa esas respuestas a Conteos ni incluye un `onFormSubmit`. No se deben retirar scripts remotos que pudieran realizar esa integración sin revisar su fuente. Véase [dictamen de retiro](FINAL_REVIEW.md#qué-scripts-se-pueden-retirar).
+
 ## Concurrencia, fallos y despliegue posterior
 
 `filelock` usa un bloqueo de archivo del sistema operativo con espera máxima de 30 segundos. Todos los procesos de la aplicación y scripts deben compartir la ruta absoluta `INVENTORY_LOCK_PATH`. El guardado mantiene el bloqueo desde la revisión del destino/duplicado hasta terminar ambos resúmenes. La creación masiva tiene además un bloqueo de ejecución para impedir dos ciclos simultáneos.
 
-**Una única instancia/servidor con filesystem común.** Contenedores con discos separados no comparten el lock. Apps Script original tampoco participa en ese bloqueo: no opere simultáneamente los dos sistemas para escribir inventarios. El Dockerfile deja Gunicorn con un worker y ocho hilos; montar credenciales y configuración externamente. No incluye secretos en la imagen, y ejecuta sin root con debug desactivado. No se ha construido ni desplegado la imagen en esta máquina.
+**Una única instancia/servidor con filesystem común.** Contenedores con discos separados no comparten el lock. Apps Script original tampoco participa en ese bloqueo: no opere simultáneamente los dos sistemas para escribir inventarios. El despliegue inicial utiliza systemd y Gunicorn con un worker, cuatro hilos y bind `127.0.0.1:8000`. El Dockerfile alternativo usa esos mismos valores y requiere red del host en Linux; no forma parte de la guía manual. Las credenciales y configuración se montan externamente. No se ha construido ni desplegado esa imagen en esta máquina.
 
 Sheets no proporciona una transacción que abarque varios documentos. Igual que en el legacy, si el conteo se escribe y después falla un resumen, el conteo permanece; un reintento del envío puede ser rechazado como duplicado. Revise los logs antes de intervenir. El borrador se conserva cuando la respuesta HTTP es un error. La reconstrucción general permite reparar ese resumen; no se agregó una operación de recuperación funcional nueva.
 

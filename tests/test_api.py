@@ -31,6 +31,28 @@ def test_errors_never_expose_tracebacks():
     assert client.get('/missing').status_code == 404
 
 
+def test_network_permission_error_is_logged_only_on_server(caplog):
+    mock = Mock()
+    mock.get_points_of_sale.side_effect = PermissionError(
+        10013, 'Intento de acceso a un socket no permitido por sus permisos de acceso')
+    app = create_app({'TESTING': True}, {'inventory': mock})
+
+    with caplog.at_level('ERROR', logger=app.logger.name):
+        response = app.test_client().get('/api/puntos-venta')
+
+    assert response.status_code == 500
+    assert response.json == {
+        'correcto': False,
+        'mensaje': 'Ocurrió un error inesperado. Revise el registro del servidor.',
+    }
+    record = next(r for r in caplog.records if r.message == 'Error inesperado')
+    assert record.exc_info[0] is PermissionError
+    assert record.exc_info[2] is not None
+    assert 'Traceback (most recent call last)' in caplog.text
+    assert '10013' in caplog.text
+    assert 'socket' not in response.text
+
+
 def test_missing_credentials_has_actionable_message(tmp_path):
     client = create_app({'TESTING': True, 'GOOGLE_TOKEN_PATH': str(tmp_path/'token.json'),
         'GOOGLE_CREDENTIALS_PATH': str(tmp_path/'credentials.json')}).test_client()

@@ -11,6 +11,8 @@ def create_app(config=None, services=None):
         app.config.update(config)
     app.json.ensure_ascii = False
     logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
+    from app.controllers.auth_controller import register_auth
+    register_auth(app)
     app.extensions['services'] = services if services is not None else build_services(app.config)
     from app.controllers.web_controller import web
     from app.controllers.inventory_controller import inventory
@@ -23,7 +25,7 @@ def create_app(config=None, services=None):
     def secure_headers(response):
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['X-Frame-Options'] = 'SAMEORIGIN'
-        response.headers['Referrer-Policy'] = 'same-origin'
+        response.headers.setdefault('Referrer-Policy', 'same-origin')
         if response.mimetype == 'application/json':
             response.headers['Cache-Control'] = 'no-store'
         return response

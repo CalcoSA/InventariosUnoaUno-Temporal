@@ -1,5 +1,8 @@
 .env
 credentials/*.json
+credentials.json
+*.pem
+*.key
 token.json
 __pycache__/
 *.pyc

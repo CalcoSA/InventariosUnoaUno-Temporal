@@ -11,6 +11,13 @@
 
   <title>Inventarios PDV</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/inventory.css') }}">
+  {% if config.AUTH_ENABLED %}
+  <script defer src="{{ url_for('static', filename='js/auth.js') }}"
+          data-idle-seconds="{{ config.SESSION_IDLE_TIMEOUT_SECONDS }}"
+          data-remaining-seconds="{{ auth_remaining_seconds }}"
+          data-session-context="{{ auth_session_context }}"
+          data-intranet-url="{{ config.INTRANET_URL }}"></script>
+  {% endif %}
 </head>
 
 <body>

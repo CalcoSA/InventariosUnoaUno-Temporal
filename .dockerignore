@@ -1,6 +1,10 @@
 .git
 .env
 credentials
+credentials.json
+token.json
+*.pem
+*.key
 .tools
 .venv
 .runtime
