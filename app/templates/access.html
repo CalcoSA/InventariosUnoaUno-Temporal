@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inventarios PDV — Acceso</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #f7f4ef; color: #4a2b14; margin: 0; }
+    main { max-width: 34rem; margin: 15vh auto; padding: 2rem; background: white; border-radius: 1rem; }
+    h1 { font-size: 1.5rem; } a { color: #4a2b14; } p { line-height: 1.6; }
+  </style>
+</head>
+<body><main>
+  <h1>{{ 'Sesión cerrada por inactividad.' if expired else 'Acceso requerido.' }}</h1>
+  <p>{{ 'Ingrese nuevamente desde la intranet.' if expired else 'Ingrese a Inventarios PDV desde la intranet.' }}</p>
+  {% if config.INTRANET_URL %}<p><a href="{{ config.INTRANET_URL }}" rel="noopener noreferrer">Ir a la intranet</a></p>{% endif %}
+</main></body>
+</html>

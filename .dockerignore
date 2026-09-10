@@ -1,0 +1,17 @@
+# Allow only runtime source. Production secrets are mounted on the VM.
+**
+!Dockerfile
+!requirements.txt
+!wsgi.py
+!app/
+!app/**
+!scripts/
+!scripts/*.py
+**/.env*
+**/*.pem
+**/*.key
+**/credentials.json
+**/token.json
+**/__pycache__
+**/__pycache__/**
+**/*.pyc

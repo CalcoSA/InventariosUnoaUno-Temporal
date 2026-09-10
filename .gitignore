@@ -1,0 +1,18 @@
+.env
+credentials/*.json
+credentials.json
+*.pem
+*.key
+token.json
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.tools/
+.runtime/
+*.log
+node_modules/
+
+# Dedicated CI SSH keys generated following the deployment guide.
+inventarios-github-actions*

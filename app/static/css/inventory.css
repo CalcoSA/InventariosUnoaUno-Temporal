@@ -1,0 +1,336 @@
+
+    :root {
+      --chocolate: #4A2B14;
+      --cafe: #65401F;
+      --beige: #F1E5D1;
+      --dorado: #D5B88B;
+      --fondo: #FCFAF6;
+      --texto: #4B321F;
+      --rojo: #A53527;
+      --blanco: #FFFFFF;
+      --verde: #477A52;
+      --sombra: 0 5px 18px rgba(74, 43, 20, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--fondo);
+      color: var(--texto);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    header {
+      padding: 28px 18px;
+      background: var(--chocolate);
+      border-bottom: 7px solid var(--dorado);
+      color: var(--blanco);
+      text-align: center;
+    }
+
+    .marca {
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 3px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    header p {
+      margin: 7px 0 0;
+      color: var(--beige);
+      font-size: 16px;
+    }
+
+    .contenedor {
+      width: min(1100px, calc(100% - 28px));
+      margin: 24px auto 50px;
+    }
+
+    .panel {
+      padding: 24px;
+      background: var(--blanco);
+      border: 1px solid var(--dorado);
+      border-radius: 16px;
+      box-shadow: var(--sombra);
+    }
+
+    h2 {
+      margin: 0 0 20px;
+      color: var(--chocolate);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--cafe);
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .datos {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    select,
+    input {
+      width: 100%;
+      min-height: 46px;
+      padding: 10px 13px;
+      background: var(--fondo);
+      border: 1px solid var(--dorado);
+      border-radius: 10px;
+      color: var(--texto);
+      font-size: 16px;
+      outline: none;
+    }
+
+    select:focus,
+    input:focus {
+      border-color: var(--cafe);
+      box-shadow: 0 0 0 3px rgba(101, 64, 31, 0.12);
+    }
+
+    button {
+      min-height: 46px;
+      padding: 11px 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: 0.65;
+    }
+
+    .boton-principal {
+      width: 100%;
+      margin-top: 18px;
+      background: var(--cafe);
+      color: var(--blanco);
+    }
+
+    .boton-principal:hover {
+      background: var(--chocolate);
+    }
+
+    .boton-secundario {
+      background: var(--beige);
+      border: 1px solid var(--dorado);
+      color: var(--chocolate);
+    }
+
+    .barra-superior {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .resumen {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 16px;
+      padding: 15px;
+      background: var(--beige);
+      border: 1px solid var(--dorado);
+      border-radius: 12px;
+    }
+
+    .resumen strong {
+      color: var(--chocolate);
+    }
+
+    .progreso-contenedor {
+      flex: 1;
+      max-width: 430px;
+    }
+
+    .progreso-texto {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .progreso-fondo {
+      height: 12px;
+      overflow: hidden;
+      background: var(--blanco);
+      border: 1px solid var(--dorado);
+      border-radius: 20px;
+    }
+
+    .progreso {
+      width: 0;
+      height: 100%;
+      background: var(--cafe);
+      transition: width 0.25s;
+    }
+
+    .productos {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .producto {
+      display: grid;
+      grid-template-columns: 1fr 250px;
+      align-items: center;
+      gap: 15px;
+      padding: 16px;
+      background: var(--blanco);
+      border: 1px solid var(--dorado);
+      border-radius: 12px;
+    }
+
+    .producto:nth-child(even) {
+      background: var(--beige);
+    }
+
+    .categoria {
+      display: inline-block;
+      margin-bottom: 7px;
+      padding: 4px 9px;
+      background: var(--chocolate);
+      border-radius: 20px;
+      color: var(--blanco);
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .nombre-producto {
+      margin-bottom: 5px;
+      color: var(--chocolate);
+      font-weight: bold;
+    }
+
+    .detalle-producto {
+      font-size: 13px;
+    }
+
+    .cantidades {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .cantidad label {
+      text-align: center;
+    }
+
+    .cantidad input {
+      background: var(--blanco);
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .acciones {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .mensaje {
+      display: none;
+      margin: 16px 0;
+      padding: 14px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+
+    .mensaje.error {
+      display: block;
+      background: #F8E5E2;
+      border: 1px solid var(--rojo);
+      color: var(--rojo);
+    }
+
+    .mensaje.exito {
+      display: block;
+      background: #E7F2E9;
+      border: 1px solid var(--verde);
+      color: var(--verde);
+    }
+
+    .cargando {
+      padding: 35px;
+      text-align: center;
+    }
+
+    .circulo {
+      width: 42px;
+      height: 42px;
+      margin: 0 auto 15px;
+      border: 5px solid var(--beige);
+      border-top-color: var(--cafe);
+      border-radius: 50%;
+      animation: girar 0.8s linear infinite;
+    }
+
+    @keyframes girar {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .oculto {
+      display: none !important;
+    }
+
+    .sin-resultados {
+      grid-column: 1 / -1;
+      padding: 30px;
+      background: var(--beige);
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    @media (max-width: 760px) {
+      header h1 {
+        font-size: 25px;
+      }
+
+      .datos,
+      .barra-superior,
+      .productos,
+      .acciones {
+        grid-template-columns: 1fr;
+      }
+
+      .resumen {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .progreso-contenedor {
+        max-width: none;
+      }
+
+      .producto {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        padding: 18px;
+      }
+    }
+  
