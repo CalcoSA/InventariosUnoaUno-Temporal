@@ -1,0 +1,66 @@
+name: Deploy Inventarios Uno a Uno - Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-prod:
+    runs-on: ubuntu-latest
+
+    env:
+      VM_HOST: ${{ secrets.VM_HOST }}
+      VM_USER: ${{ secrets.VM_USER }}
+      PROD_PATH: ${{ secrets.PROD_PATH }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+
+          cat > ~/.ssh/id_ed25519 << 'EOF'
+          ${{ secrets.VM_SSH_KEY }}
+          EOF
+
+          chmod 600 ~/.ssh/id_ed25519
+
+          ssh-keyscan -H "$VM_HOST" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Sync project to Production
+        run: |
+          rsync -az --delete \
+            --exclude ".git" \
+            --exclude ".github" \
+            --exclude ".venv" \
+            --exclude ".env" \
+            --exclude "credentials" \
+            --exclude "secrets" \
+            --exclude ".runtime" \
+            --exclude "__pycache__" \
+            --exclude ".pytest_cache" \
+            -e "ssh -i ~/.ssh/id_ed25519" \
+            ./ "$VM_USER@$VM_HOST:$PROD_PATH/"
+
+      - name: Deploy with Docker Compose
+        run: |
+          ssh -i ~/.ssh/id_ed25519 "$VM_USER@$VM_HOST" "
+            set -e
+
+            cd '$PROD_PATH'
+
+            docker compose -f compose.prod.yaml up -d --build --remove-orphans
+
+            sleep 10
+
+            curl --fail --silent --show-error \
+              http://127.0.0.1:8088/healthz
+
+            docker compose -f compose.prod.yaml ps
+
+            docker image prune -f
+          "

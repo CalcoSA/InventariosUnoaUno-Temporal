@@ -1,0 +1,37 @@
+services:
+  inventarios:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: inventarios-uno-a-uno
+    restart: unless-stopped
+    init: true
+
+    env_file:
+      - .env
+
+    ports:
+      - "127.0.0.1:8088:8000"
+
+    volumes:
+      - ./credentials/credentials.json:/app/credentials/credentials.json:ro
+      - ./credentials/token.json:/app/credentials/token.json
+      - ./.runtime:/app/.runtime
+      - ./secrets/sso/public.pem:/run/secrets/sso/public.pem:ro
+
+    security_opt:
+      - no-new-privileges:true
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=5)"
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
