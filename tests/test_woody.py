@@ -29,7 +29,7 @@ def woody(private_key, clock):
             serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8,
             serialization.NoEncryption()).decode(), **changes}
         # Keys and JWT results exist only in pipe memory, never stdout of the test runner.
-        result = subprocess.run(php_command() + ['tests/woody_harness.php', 'deploy/woody_sso_snippet.php'],
+        result = subprocess.run(php_command() + ['tests/woody_harness.php', 'wordpress/inventarios-sso.php'],
             input=json.dumps(data), capture_output=True, text=True, encoding='utf-8', timeout=15)
         if result.returncode or result.stderr:
             pytest.fail('PHP snippet execution failed; output omitted to avoid exposing JWT data')

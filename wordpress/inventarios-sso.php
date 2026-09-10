@@ -1,5 +1,8 @@
 <?php
 /**
+ * Plugin Name: Inventarios PDV SSO
+ * Description: Acceso firmado desde la intranet a Inventarios PDV.
+ * Version: 1.0.0
  * Woody: PHP snippet, auto-execute EVERYWHERE (including wp-admin/admin-post).
  * Then place [inventarios_pdv_sso] on the protected intranet page.
  * If Woody supplies <?php automatically, omit this file's opening PHP tag.

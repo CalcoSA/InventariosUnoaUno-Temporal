@@ -1,5 +1,22 @@
 # Verificaciones de la revisión final
 
+## Docker Compose, CI/CD y WordPress (10 de septiembre de 2026)
+
+Se sustituyó la preparación anterior por `Dockerfile`, `compose.yaml` y el workflow automático de GitHub Actions. Se eliminó `deploy/` y se trasladó el PHP a `wordpress/inventarios-sso.php`, compatible con Woody o como plugin independiente. Las instrucciones vigentes están en [GitHub](docs/GITHUB_ACTIONS.md), [GCP](docs/GCP_DOCKER.md) y [WordPress](docs/WORDPRESS_SSO.md).
+
+**198 casos aprobados:** primera ejecución completa `190 passed, 8 skipped` por ausencia de PHP; después se ejecutaron los ocho casos omitidos con PHP portable 8.4.25 y OpenSSL: `8 passed`. No quedan casos pendientes de esa suite. Los diez casos de despliegue usan comandos simulados y comprueban instalación inicial, orden de parada/arranque, fallos de carga/configuración, rechazo de otra etiqueta, recuperación y fallo de recuperación. No acceden a una VM ni a Docker real.
+
+| Comprobación | Resultado |
+|---|---|
+| Workflow | `actionlint` 1.7.12, sin errores; sin analizadores externos shellcheck/pyflakes |
+| Compose | CLI oficial 5.5.1, `config --quiet --no-env-resolution --no-path-resolution`, sin errores |
+| Ejecutor remoto | `bash -n` y diez pruebas simuladas aprobadas |
+| WordPress | `php -n -l` sin errores y ocho pruebas reales PHP/OpenSSL ↔ Flask aprobadas |
+| JavaScript | `node --check` de autenticación e inventario aprobado |
+| Documentación | Enlaces locales vigentes; instrucciones antiguas redirigidas a Docker |
+
+Los validadores portables se descargaron desde sus proveedores oficiales, se verificaron por SHA-256 y se retiraron al terminar. **No se construyó ni arrancó un contenedor local:** no hay Docker Engine disponible en este entorno. El workflow realiza build, `pip check` y comprobación con test client dentro de la imagen antes de desplegar; el ejecutor en GCP verifica configuración real y espera a que el contenedor esté saludable. Esas ejecuciones de infraestructura quedan pendientes de configurar la VM y GitHub. No se inició ningún servidor local ni se escribió en Google, GCP o WordPress. `.env` y la lógica de inventario permanecen intactos.
+
 ## Fase posterior: SSO, inactividad y preparación Apache (9 de septiembre de 2026)
 
 Suite final: **188 passed**, sin omisiones, frente a las 82 pruebas anteriores (**106 casos añadidos**). Ejecutada con Python 3.12.10, Node 24.19.0, PyJWT 2.13.0 y PHP portátil 8.4.25 con OpenSSL. El PHP de validación se descargó del proveedor oficial, se verificó su SHA256 y se retiró después; para repetir sus ocho casos en otra máquina instalar PHP CLI o indicar `PHP_TEST_BINARY`. Sin PHP esos ocho casos se omiten; sin Node se omiten las pruebas JavaScript según la configuración existente.
@@ -17,7 +34,7 @@ Comando ejecutado, con `PHP_TEST_BINARY` apuntando temporalmente al PHP de valid
 | Reloj simulado de dos pestañas | La pestaña activa mantiene la sesión compartida, incluso con storage deshabilitado; la inactiva no elimina cookies; cierre tras inactividad de ambas |
 | Borrador | Expiración, 401 y logout conservan la clave y contenido; la función real `recuperarBorrador()` recupera Cerrado/Abierto |
 | `tests/test_woody.py` + `tests/woody_harness.php` | 8 casos: PHP real/OpenSSL firma un JWT que Flask acepta; replay rechazado; botón en pestaña nueva; login/nonce/método/clave/subject inválidos fallan de forma segura |
-| Sintaxis PHP | `php -n -l deploy/woody_sso_snippet.php`: sin errores |
+| Sintaxis PHP | `php -n -l wordpress/inventarios-sso.php`: sin errores |
 | `pip check` | Sin dependencias rotas |
 | Sintaxis JavaScript | `node --check` correcto para auth.js e inventory.js |
 | Entrada WSGI | `wsgi:app` importable y healthcheck 200 mediante test client, sin Google ni puerto |
@@ -31,7 +48,7 @@ Estas pruebas no llaman Google real: el fixture bloquea el proveedor de API. Los
 
 Cierre local: eliminados **seis directorios temporales** (PHP portátil y su ZIP dentro de `.runtime/php-validation`, más cinco `__pycache__` propios de app). Se conservaron `.venv`, `.tools/python`, credenciales, legacy, compat, tests y documentos. Inspección final de procesos: ningún Python/PHP/Gunicorn; **ningún listener en 5000 u 8000**. No se detuvo ningún proceso ajeno. No había archivos Nginx obsoletos para retirar. `.gitignore` y `.dockerignore` excluyen también claves PEM/KEY y JSON privados.
 
-Archivos de operación: [DEPLOY_GCP_APACHE.md](docs/DEPLOY_GCP_APACHE.md), [AUTENTICACION_SSO.md](docs/AUTENTICACION_SSO.md), [Woody](deploy/woody_sso_snippet.php), [systemd](deploy/inventarios-uno-a-uno.service), [vhost Apache](deploy/apache-inventariospdv-v2.conf).
+Archivos de operación: [GCP y Docker](docs/GCP_DOCKER.md), [GitHub y Secrets](docs/GITHUB_ACTIONS.md), [WordPress](docs/WORDPRESS_SSO.md), [AUTENTICACION_SSO.md](docs/AUTENTICACION_SSO.md), [PHP SSO](wordpress/inventarios-sso.php) y [Compose](compose.yaml).
 
 ## Evidencia histórica de lectura Google anterior a la fase SSO
 

@@ -13,3 +13,6 @@ venv/
 .runtime/
 *.log
 node_modules/
+
+# Dedicated CI SSH keys generated following the deployment guide.
+inventarios-github-actions*
