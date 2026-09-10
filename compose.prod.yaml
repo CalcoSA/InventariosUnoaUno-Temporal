@@ -15,8 +15,7 @@ services:
       - "127.0.0.1:8088:8000"
 
     volumes:
-      - ./credentials/credentials.json:/app/credentials/credentials.json:ro
-      - ./credentials/token.json:/app/credentials/token.json
+      - ./credentials:/app/credentials
       - ./.runtime:/app/.runtime
       - ./secrets/sso/public.pem:/run/secrets/sso/public.pem:ro
 
