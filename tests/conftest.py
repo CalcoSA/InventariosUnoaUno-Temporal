@@ -42,6 +42,9 @@ class MemorySheets:
             rows = [[js_string(v) if v is not None else '' for v in r] for r in rows]
         return rows
 
+    def read_views(self, book, title):
+        return self.read(book, title, display=True), self.read(book, title)
+
     def write(self, book, title, start_row, rows, start_col=1):
         self.calls.append(('write', book, title, start_row, deepcopy(rows), start_col))
         data = self.books[book][title]
@@ -59,6 +62,17 @@ class MemorySheets:
     def write_ranges(self, book, title, updates):
         for row, values, column in updates:
             self.write(book, title, row, values, column)
+
+    def write_documents(self, book, metadata, documents):
+        for document in documents:
+            title = document['title']
+            if document.get('rename_from'):
+                self.books[book][title] = self.books[book].pop(document['rename_from'])
+            self.ensure_sheet(book, title)
+            if document.get('replace'):
+                self.clear(book, title)
+            self.write_ranges(book, title, document['updates'])
+            self.format_header(book, title, document['columns'])
 
     def clear(self, book, title, all_format=False):
         self.calls.append(('clear', book, title, all_format))

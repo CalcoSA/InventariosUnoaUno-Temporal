@@ -1,10 +1,11 @@
 import math
 import uuid
-from app.constants import ITEM_OPTIONS, PRODUCT_OPTIONS, UDM_OPTIONS, FACTOR_OPTIONS
+from app.constants import ITEM_OPTIONS, PRODUCT_OPTIONS, UDM_OPTIONS, FACTOR_OPTIONS, COUNT_HEADERS
 from app.errors import FunctionalError
 from app.models.product import Product
 from app.models.inventory_count import InventoryCount
 from app.models.inventory_result import InventoryResult
+from app.services.read_cache import ReadCache
 from app.utils import cell, text, js_string, normalize, find_index, correct_factor, convert_number, duplicate_key, spanish_key
 
 
@@ -12,9 +13,10 @@ class InventoryService:
     def __init__(self, master, pdv, summary, lock, now, timezone='America/Bogota'):
         self.master, self.pdv, self.summary = master, pdv, summary
         self.lock, self.now, self.timezone = lock, now, timezone
+        self._products_cache = ReadCache(ttl=180, max_entries=64)
 
     def get_points_of_sale(self):
-        names = [text(cell(r, 1)).strip() for r in self.master.control()[1:]
+        names = [text(cell(r, 1)).strip() for r in self.master.control(cached=True)[1:]
                  if cell(r, 1) != '' and text(cell(r, 2)).strip().upper() == 'LISTO' and cell(r, 3) != '']
         return sorted(set(names), key=spanish_key)
 
@@ -22,14 +24,17 @@ class InventoryService:
         return sorted({p['categoria'] for p in self.get_products(punto_venta) if p['categoria'] != ''}, key=spanish_key)
 
     def get_products(self, punto_venta, categoria=None):
-        book = self.pdv.book(punto_venta)
+        book = self.pdv.book(punto_venta, cached=True)
+        products = self._products_cache.get(book, lambda: self._load_products(punto_venta, book))
+        return [p for p in products if not normalize(categoria) or normalize(p['categoria']) == normalize(categoria)]
+
+    def _load_products(self, punto_venta, book):
         sheet = self.pdv.source(book)
         if not sheet:
             raise FunctionalError(f'No se encontró la hoja "Uno a Uno" para {punto_venta}.')
-        display = self.pdv.sheets.read(book, sheet['title'], display=True)
+        display, raw = self.pdv.sheets.read_views(book, sheet['title'])
         if len(display) < 2:
             return []
-        raw = self.pdv.sheets.read(book, sheet['title'])
         headers = display[0]
         options = [['categoria'], ITEM_OPTIONS, PRODUCT_OPTIONS,
                    UDM_OPTIONS + ['descripcion unidad de medida', 'um empaque']]
@@ -43,8 +48,7 @@ class InventoryService:
             factor = correct_factor(cell(row, c_udm), cell(raw[position + 1], c_factor) if c_factor != -1 else 1)
             product = Product(position + 1, js_string(cell(row, c_cat)).strip() or 'Uno a Uno',
                 js_string(cell(row, c_item)).strip(), js_string(cell(row, c_product)).strip(), js_string(cell(row, c_udm)).strip(), factor)
-            if not normalize(categoria) or normalize(product.categoria) == normalize(categoria):
-                result.append(product.to_dict())
+            result.append(product.to_dict())
         return result
 
     def save_inventory(self, data):
@@ -77,12 +81,17 @@ class InventoryService:
                 raise FunctionalError(f'El conteo físico del ítem {item} no es válido.')
             rows.append([record_id, stamp, data['fecha'], data['puntoVenta'], data['categoria'],
                          c.get('item', ''), c.get('producto', ''), c.get('udm', ''), closed, opened, factor, count.conteo_fisico])
-        with self.lock.acquire():
-            self.pdv.prepare_counts(book)
+        # La carga de 40 inventarios con 40 productos supera 30 s en simulación.
+        # Espera acotada después de reducir los round-trips; no altera otros locks.
+        with self.lock.acquire(timeout=60):
+            metadata, previous = self.pdv.load_for_save(book)
             key = duplicate_key(data['fecha'], data['puntoVenta'], data['categoria'], self.timezone)
-            if any(duplicate_key(cell(r, 2), cell(r, 3), cell(r, 4), self.timezone) == key for r in self.pdv.counts(book)[1:]):
+            if any(duplicate_key(cell(r, 2), cell(r, 3), cell(r, 4), self.timezone) == key for r in previous[1:]):
                 raise FunctionalError(f'La categoría "{data["categoria"]}" ya fue guardada para {data["puntoVenta"]} en esta fecha.')
-            self.pdv.append_counts(book, rows)
-            self.summary.update_pdv_summary(book)
+            # Instantánea fresca bajo el mismo lock + filas de este envío. No es
+            # caché: se descarta al terminar. Mantener columnas extra del encabezado.
+            counts_after_save = [COUNT_HEADERS + (previous[0][12:] if previous else [])] + previous[1:] + rows
+            summary_rows = self.summary.pdv_summary_rows(book, data=counts_after_save)
+            self.pdv.save_counts_and_summary(book, metadata, previous, rows, summary_rows)
             self.summary.register_general_summary(rows)
         return InventoryResult(len(rows)).to_dict()

@@ -6,8 +6,8 @@ class PdvSheetRepository:
     def __init__(self, sheets, master):
         self.sheets, self.master = sheets, master
 
-    def book(self, pdv):
-        return self.master.pdv_book(pdv)
+    def book(self, pdv, *, cached=False):
+        return self.master.pdv_book(pdv, cached=cached)
 
     def source(self, book):
         return self.sheets.find_sheet(book, 'Uno a Uno', normalized=True)
@@ -34,6 +34,20 @@ class PdvSheetRepository:
 
     def counts(self, book):
         return self.sheets.read(book, 'Conteos Inventarios') if self.sheets.find_sheet(book, 'Conteos Inventarios') else []
+
+    def load_for_save(self, book):
+        metadata = self.sheets.metadata(book)
+        exists = any(s['properties']['title'] == 'Conteos Inventarios' for s in metadata.get('sheets', []))
+        return metadata, self.sheets.read(book, 'Conteos Inventarios') if exists else []
+
+    def save_counts_and_summary(self, book, metadata, previous, rows, summary_rows):
+        self.sheets.write_documents(book, metadata, [
+            {'title': 'Conteos Inventarios', 'columns': 12,
+             'format_header': not previous or previous[0][:12] != COUNT_HEADERS,
+             'updates': [(1, [COUNT_HEADERS], 1), (max(1, len(previous)) + 1, rows, 1)]},
+            {'title': 'Resumen Inventario', 'columns': 10, 'freeze': True, 'replace': True,
+             'updates': [(1, [SUMMARY_HEADERS] + summary_rows, 1)]},
+        ])
 
     def prepare_counts(self, book):
         self.sheets.ensure_sheet(book, 'Conteos Inventarios')

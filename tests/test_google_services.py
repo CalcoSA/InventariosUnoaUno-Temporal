@@ -26,8 +26,42 @@ def test_transient_retries(status, monkeypatch):
     assert request.execute.call_count == 2
 
 
+def test_429_429_success_uses_increasing_waits_and_jitter(monkeypatch):
+    request = Mock()
+    request.execute.side_effect = [http_error(429), http_error(429), {'ok': True}]
+    sleep, jitter = Mock(), Mock(side_effect=[0.25, 0.75])
+    monkeypatch.setattr('app.services.google_request.time.sleep', sleep)
+    monkeypatch.setattr('app.services.google_request.random.random', jitter)
+    assert execute(request) == {'ok': True}
+    assert request.execute.call_count == 3
+    assert [call.args[0] for call in sleep.call_args_list] == [1.25, 2.75]
+    assert jitter.call_count == 2
+
+
+def test_exhausted_429_is_controlled_and_not_cached(monkeypatch, system):
+    from app import create_app
+    request = Mock()
+    request.execute.side_effect = http_error(429)
+    sleep, jitter = Mock(), Mock(side_effect=[0.25, 0.5, 0.75])
+    monkeypatch.setattr('app.services.google_request.time.sleep', sleep)
+    monkeypatch.setattr('app.services.google_request.random.random', jitter)
+    read = Mock(side_effect=lambda *args, **kwargs: execute(request))
+    monkeypatch.setattr(system.sheets, 'read', read)
+    client = create_app({'TESTING': True}, {'inventory': system.inventory}).test_client()
+    response = client.get('/api/puntos-venta')
+    assert response.status_code == 502
+    assert response.json == {'correcto': False, 'mensaje': 'Google está recibiendo demasiadas solicitudes. Intente nuevamente.'}
+    assert request.execute.call_count == 4
+    assert [call.args[0] for call in sleep.call_args_list] == [1.25, 2.5, 4.75]
+    assert jitter.call_count == 3
+    read.side_effect = None
+    read.return_value = system.sheets.books['master']['Control Formularios']
+    assert client.get('/api/puntos-venta').json == ['PDV ÁRBOL']
+    assert read.call_count == 2
+
+
 def test_permanent_and_unsafe_requests_not_retried():
-    for status, safe in [(403, True), (503, False)]:
+    for status, safe in [(403, True), (503, False), (429, False)]:
         request = Mock()
         request.execute.side_effect = http_error(status)
         with pytest.raises(HttpError):
@@ -74,6 +108,26 @@ def test_sheets_raw_dates_and_display_are_distinct():
     row = service.read('book', 'sheet')[0]
     assert isinstance(row[0], datetime)
     assert row[1] == '001'
+
+
+def test_sheets_views_share_one_get_preserving_formats_and_empty_formula():
+    auth = Mock()
+    api = auth.api.return_value.spreadsheets.return_value
+    api.get.return_value.execute.return_value = {'properties': {'timeZone': 'America/Bogota'}, 'sheets': [{'data': [{'rowData': [
+        {'values': [{'effectiveValue': {'numberValue': 46273}, 'formattedValue': '08/09/2026',
+                     'effectiveFormat': {'numberFormat': {'type': 'DATE'}}},
+                    {'effectiveValue': {'numberValue': 1}, 'formattedValue': '001'},
+                    {'effectiveValue': {'numberValue': 2.5}, 'formattedValue': '2,5'}]},
+        {'values': []},
+        {'values': [{'userEnteredValue': {'formulaValue': '=IF(TRUE,"","")'},
+                     'effectiveValue': {'stringValue': ''}, 'formattedValue': ''}]},
+        {'values': [{'effectiveFormat': {'numberFormat': {'type': 'NUMBER'}}}]}]}]}]}
+    display, raw = GoogleSheetsService(auth).read_views('book', 'sheet')
+    assert display == [['08/09/2026', '001', '2,5'], ['', '', ''], ['', '', '']]
+    assert isinstance(raw[0][0], datetime)
+    assert raw[0][1:] == [1, 2.5]
+    assert raw[1:] == [['', '', ''], ['', '', '']]
+    api.get.return_value.execute.assert_called_once_with(num_retries=0)
 
 
 def test_sheets_write_uses_literal_text_and_dates(monkeypatch):

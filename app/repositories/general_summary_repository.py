@@ -24,6 +24,32 @@ class GeneralSummaryRepository:
     def rows(self):
         return self.sheets.read(self.book_id, self.title)[1:]
 
+    def load_for_save(self):
+        metadata = self.sheets.metadata(self.book_id)
+        sheets = metadata.get('sheets', [])
+        if any(s['properties']['title'] == self.title for s in sheets):
+            return metadata, self.sheets.read(self.book_id, self.title), None
+        if sheets:
+            first = sheets[0]['properties']['title']
+            if not self.sheets.read(self.book_id, first, display=True):
+                return metadata, [], first
+        return metadata, [], None
+
+    def save_changes(self, metadata, previous, updates, additions, rename_from=None):
+        groups = []
+        if not previous:
+            groups.append((1, [SUMMARY_HEADERS], 1))
+        for number, values in sorted(updates):
+            if groups and number == groups[-1][0] + len(groups[-1][1]):
+                groups[-1][1].append(values)
+            else:
+                groups.append((number, [values], 1))
+        if additions:
+            groups.append((max(1, len(previous)) + 1, additions, 1))
+        self.sheets.write_documents(self.book_id, metadata, [
+            {'title': self.title, 'updates': groups, 'columns': 10, 'freeze': True,
+             'format_header': not previous, 'rename_from': rename_from}])
+
     def update(self, row, values):
         self.sheets.write(self.book_id, self.title, row, [values])
 

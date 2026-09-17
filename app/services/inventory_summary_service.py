@@ -21,8 +21,8 @@ class InventorySummaryService:
         for i in (5, 6, 8):
             grouped[key][i] += number_or_zero(record[i])
 
-    def records_from_counts(self, book, strict=False, fallback_pdv=''):
-        data = self.pdv.counts(book)
+    def records_from_counts(self, book, strict=False, fallback_pdv='', data=None):
+        data = self.pdv.counts(book) if data is None else data
         if len(data) < 2:
             return []
         options = [['fecha inventario'], ['punto de venta', 'pdv'], ['item', 'codigo', 'cod'],
@@ -31,7 +31,8 @@ class InventorySummaryService:
         indexes = [find_index(data[0], opts) for opts in options]
         if strict and -1 in indexes[:7]:
             raise FunctionalError('No se pudieron identificar todas las columnas de Conteos Inventarios.')
-        factors = self.pdv.factors(book)
+        # Si el conteo incluye su factor guardado, el catálogo no se utiliza.
+        factors = self.pdv.factors(book) if indexes[7] == -1 else {}
         records = []
         for row in data[1:]:
             values = [cell(row, i) for i in indexes]
@@ -47,19 +48,22 @@ class InventorySummaryService:
         return records
 
     def update_pdv_summary(self, book):
+        self.pdv.replace_summary(book, self.pdv_summary_rows(book))
+
+    def pdv_summary_rows(self, book, data=None):
         grouped = {}
-        for record in self.records_from_counts(book, strict=True):
+        for record in self.records_from_counts(book, strict=True, data=data):
             self.aggregate(grouped, record)
         rows = sorted(grouped.values(), key=lambda r: (date_key(r[0], self.timezone), spanish_key(r[2], numeric=True)))
         stamp = self.now()
         # PDV recalcula con el PRIMER factor del grupo; general suma los físicos individuales.
         for r in rows:
             r[8] = r[5] * r[7] + r[6]
-        self.pdv.replace_summary(book, [r + [stamp] for r in rows])
+        return [r + [stamp] for r in rows]
 
     def register_general_summary(self, count_rows):
-        self.general.prepare()
-        existing = self.general.rows()
+        metadata, previous, rename_from = self.general.load_for_save()
+        existing = previous[1:]
         positions = {self.key(r): i for i, r in enumerate(existing) if self.key(r)}
         grouped = {}
         for row in count_rows:
@@ -73,9 +77,7 @@ class InventorySummaryService:
                 updates.append((i + 2, record + [stamp]))
             else:
                 additions.append(record + [stamp])
-        self.general.update_many(updates)
-        self.general.append(additions)
-        self.general.format()
+        self.general.save_changes(metadata, previous, updates, additions, rename_from)
 
     def rebuild_general_summary(self):
         with self.lock.acquire():

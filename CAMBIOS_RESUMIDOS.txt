@@ -1,0 +1,15 @@
+MEJORAS DE CONCURRENCIA - GUARDADO INVENTARIOS PDV
+
+Problema:
+Los guardados hacían consultas repetidas y mantenían a otros usuarios esperando.
+En la simulación inicial, 26 de 36 solicitudes agotaron el tiempo de espera.
+
+Cambios realizados:
+- Se redujeron las llamadas por guardado de 35 a 10.
+- Se agruparon las escrituras y se conservaron los cálculos y la protección contra duplicados.
+- Se ajustó la espera máxima a 60 segundos después de optimizar el guardado.
+
+Resultado:
+Con 40 productos por inventario, las pruebas simuladas completaron 36 guardados en 28,3 segundos y 40 en 32,5 segundos.
+Esas tandas terminaron sin pérdidas ni errores de espera; no se escribió en Google real.
+También se comprobó que una cuota agotada de Google podía seguir causando errores: no se garantizó producción sin fallos.
